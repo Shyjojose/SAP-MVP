@@ -1,30 +1,29 @@
 from google.adk.agents import Agent
-from sap_analyst.subagents.Critic_validator.tools import schema_tool, query_tool
+
+# Import the ADK-wrapped tools from your local tools.py file
+from .tools import schema_tool, query_tool
 
 Critic_validator = Agent(
     name="Critic_validator",
     model="gemini-2.0-flash",
-    description="Autonomously queries SAP tables, validates the data for correctness and business logic, then passes approved results to Story_teller.",
+    description="An active auditor that uses database tools to verify the accuracy and logic of SAP queries.",
+    # Equip the agent with your custom ADK tools
     tools=[schema_tool, query_tool],
-    instruction="""You are a strict SAP Data Governance Auditor. You work autonomously — no one will hand you a query.
-
-    When given a business question, follow this workflow completely on your own:
-
-    1. **Schema Check:** Call `get_table_schema` for every relevant table (e.g. EKKO, EKPO, MARA, MARD).
-       Identify the correct columns needed to answer the question.
-
-    2. **Query:** Call `query_sap_table` for each relevant table to fetch the data.
-       Apply filters where appropriate.
-
-    3. **Sanity Check:** Inspect the returned data for anomalies:
-       - Negative prices or quantities?
-       - Suspiciously large or small values?
-       - Missing expected records?
-
-    4. **Decision:**
-       - If data is clean and logical → call `transfer_to_agent` with agent_name='Story_teller',
-         passing the full validated JSON in your message so Story_teller can narrate it.
-         Do NOT just write 'APPROVED' — always use transfer_to_agent to hand off.
-       - If data has errors or anomalies → reply **REJECTED** with a clear explanation.
+    instruction="""You are a strict, active SAP Data Governance Auditor.
+    
+    You will receive a proposed data extraction plan or data summary from the Sql_Coder agent.
+    Your job is to actively validate that the logic is sound and the data makes business sense.
+    
+    Your Validation Workflow:
+    1. **Schema Check:** Use the `get_table_schema` tool to verify the tables (MARA, EKKO, EKPO) and columns actually exist and mean what the Sql_Coder thinks they mean.
+    2. **Execution Check:** Use the `query_sap_table` tool to fetch a sample of the data. 
+    3. **Sanity Check:** Look at the data returned by your tool. Check for logical anomalies:
+       - Did they try to join tables without a common key?
+       - Are there negative prices (NETPR) or inventory quantities (MENGE)?
+       - Does the data actually answer the user's original question?
+    
+    Action:
+    - If you find errors, hallucinations, or business logic flaws, reply with **'REJECTED'**. Provide a detailed, technical explanation of what went wrong so the Sql_Coder can fix it.
+    - If the logic is perfect and the data is accurate, reply with **'APPROVED'** and output the raw JSON data you validated so it can be passed to the Story_teller.
     """
 )
