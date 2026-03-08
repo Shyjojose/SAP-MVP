@@ -1,0 +1,9 @@
+google-adk==1.26.0
+google-genai==1.66.0
+google-cloud-aiplatform==1.140.0
+aiosqlite==0.22.1
+greenlet==3.3.2
+python-dotenv==1.2.2
+uvicorn==0.41.0
+SQLAlchemy==2.0.48
+fastapi==0.135.1
