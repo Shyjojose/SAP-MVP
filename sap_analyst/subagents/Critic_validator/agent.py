@@ -5,7 +5,7 @@ from .tools import schema_tool, query_tool
 
 Critic_validator = Agent(
     name="Critic_validator",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="An active auditor that uses database tools to verify the accuracy and logic of SAP queries.",
     # Equip the agent with your custom ADK tools
     tools=[schema_tool, query_tool],

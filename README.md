@@ -1,6 +1,6 @@
 # SAP Analyst MVP — Google ADK Multi-Agent System
 
-An AI-powered SAP procurement analyst built with the **Google Agent Development Kit (ADK)** and **Vertex AI (Gemini 2.0 Flash)**. It uses a multi-agent pipeline to autonomously query SAP tables, validate data, and deliver business-ready supply chain insights — without requiring technical knowledge from the end user.
+An AI-powered SAP procurement analyst built with the **Google Agent Development Kit (ADK)** and **Vertex AI (Gemini 2.5 Flash)**. It uses a multi-agent pipeline to autonomously query SAP tables, validate data, and deliver business-ready supply chain insights — without requiring technical knowledge from the end user.
 
 > This MVP serves as a proof-of-concept for the Master Thesis topic: **"Autonomous Generation of Multi-Agent Systems for Supply Chain Planning"** at SAP's Supply Chain Management (SCM) Data Science team.
 
@@ -63,7 +63,7 @@ SAP MVP/
 ### 1. Prerequisites
 - Python 3.11+
 - A GCP project with Vertex AI API enabled
-- `gcloud` CLI authenticated (`gcloud auth application-default login`)
+- `gcloud` CLI authenticated with Application Default Credentials (`gcloud auth application-default login`)
 
 ### 2. Clone and install
 
@@ -77,13 +77,15 @@ pip install -r requirements.txt
 
 ### 3. Configure environment
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root and use Vertex AI auth, not a Gemini API key:
 
 ```env
 GOOGLE_GENAI_USE_VERTEXAI="true"
 GOOGLE_CLOUD_PROJECT="your-gcp-project-id"
 GOOGLE_CLOUD_LOCATION="us-central1"
 ```
+
+If you run the app on Cloud Run, GCE, or GKE, prefer a runtime service account instead of a downloaded key file.
 
 ### 4. Run the ADK Dev UI
 

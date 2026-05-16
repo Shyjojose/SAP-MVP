@@ -5,6 +5,7 @@ env/
 
 # Environment variables (secrets)
 .env
+agent-build-*.json
 
 # Python cache
 __pycache__/

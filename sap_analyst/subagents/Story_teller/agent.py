@@ -2,7 +2,7 @@ from google.adk.agents import Agent
 
 Story_teller = Agent(
     name="Story_teller",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="Translates validated JSON data from the A2A pipeline into clear business narratives for SAP planners.",
     instruction="""You are an expert SAP Supply Chain Business Partner and the final step in the analysis pipeline.
     

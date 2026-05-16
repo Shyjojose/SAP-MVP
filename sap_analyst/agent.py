@@ -4,7 +4,7 @@ from sap_analyst.subagents.Story_teller.agent import Story_teller
 
 root_agent = Agent(
     name="sap_analyst",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="SAP Analyst orchestrator that validates data and narrates business insights.",
     instruction="""You are the SAP Analyst — an intelligent orchestrator for SAP data queries.
 
