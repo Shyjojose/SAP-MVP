@@ -1,0 +1,17 @@
+{
+  "name": "orchestrator",
+  "description": "Orchestrator agent that coordinates Researcher, Critic Validator, and Story Teller",
+  "url": "http://localhost:8000/a2a/orchestrator",
+  "version": "0.0.1",
+  "capabilities": {},
+  "default_input_modes": ["text/plain"],
+  "default_output_modes": ["text/plain"],
+  "skills": [
+    {
+      "id": "orchestrator",
+      "name": "model",
+      "description": "Pipeline orchestration skill",
+      "tags": ["agent"]
+    }
+  ]
+}

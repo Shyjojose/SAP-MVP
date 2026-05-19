@@ -23,8 +23,8 @@ def create_save_output_callback(key: str):
                             ctx.state[key] = json.loads(text)
                         except json.JSONDecodeError:
                             ctx.state[key] = text # if json decoding fails, save the raw text for debugging
-                        else:
-                            ctx.state[key] = text
+                    else:
+                        ctx.state[key] = text
                         print(f"[{ctx.agent_name}] Saved output to state['{key}']")
                         return
                     

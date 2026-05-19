@@ -1,0 +1,17 @@
+{
+  "name": "Researcher",
+  "description": "Researcher agent for SAP data collection and source analysis",
+  "url": "http://localhost:8001/a2a/Researcher",
+  "version": "0.0.1",
+  "capabilities": {},
+  "default_input_modes": ["text/plain"],
+  "default_output_modes": ["text/plain"],
+  "skills": [
+    {
+      "id": "Researcher",
+      "name": "model",
+      "description": "Data research and extraction skill",
+      "tags": ["agent"]
+    }
+  ]
+}
