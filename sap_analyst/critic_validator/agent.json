@@ -1,0 +1,17 @@
+{
+  "name": "critic_validator",
+  "description": "Critic Validator agent for SAP data governance auditing",
+  "url": "http://localhost:8002/a2a/critic_validator",
+  "version": "0.0.1",
+  "capabilities": {},
+  "default_input_modes": ["text/plain"],
+  "default_output_modes": ["text/plain"],
+  "skills": [
+    {
+      "id": "critic_validator",
+      "name": "model",
+      "description": "Main validation skill",
+      "tags": ["agent"]
+    }
+  ]
+}

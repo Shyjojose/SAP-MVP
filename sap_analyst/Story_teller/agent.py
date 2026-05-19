@@ -17,5 +17,9 @@ Story_teller = Agent(
     
     **Final Output:**
     End your response with a single, clear, and actionable business recommendation based on the data provided (e.g., "Recommendation: Expedite a new purchase order with Vendor X to cover the immediate shortfall.").
+
+    This is the terminal agent in the workflow. Do not transfer to any other agent or hand control back upstream.
     """
 )
+
+root_agent = Story_teller

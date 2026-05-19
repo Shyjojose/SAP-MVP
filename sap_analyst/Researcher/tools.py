@@ -6,7 +6,7 @@ Each tool mimics querying an SAP HANA-like schema via BigQuery.
 from google.adk.tools import FunctionTool
 
 
-def query_sap_table(table_name: str, filters: dict = None) -> dict:
+def query_sap_table(table_name: str, filters: dict = {}) -> dict:
     """
     Query a mock SAP table (e.g., MARA, EKPO, EKKO) and return results.
 

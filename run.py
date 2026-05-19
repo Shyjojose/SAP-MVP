@@ -1,30 +1,17 @@
-"""
-Starts the SAP Analyst ADK web server with:
-  - DatabaseSessionService  → sessions + state persisted to SQLite (survive restarts)
-  - InMemoryMemoryService   → cross-session semantic search (in-process)
-
-Session state (tool_context.state) is written to SQLite so saved insights
-persist across server restarts within the same session ID.
-"""
-
+import os
 from dotenv import load_dotenv
+
+# Use ADK helper to build a FastAPI app that exposes the ADK Web UI/API
+from google.adk.cli.fast_api import get_fast_api_app
+
+# Load environment variables from .env
 load_dotenv()
 
-from google.adk.cli.fast_api import get_fast_api_app
-import uvicorn
-
-# SQLite with async driver — sessions and their state survive restarts
-SESSION_DB = "sqlite+aiosqlite:///./sap_analyst_sessions.db"
-
-app = get_fast_api_app(
-    agents_dir=".",
-    session_service_uri=SESSION_DB,
-    allow_origins=["http://localhost", "http://127.0.0.1"],
-    web=True,
-)
+# Build the FastAPI app using the local `sap_analyst` agents directory.
+# `web=True` serves the dev UI; `a2a=True` enables Agent-to-Agent endpoints.
+app = get_fast_api_app(agents_dir="sap_analyst", web=True, a2a=True, host="0.0.0.0", port=8010)
 
 if __name__ == "__main__":
-    print("Starting SAP Analyst with persistent sessions...")
-    print(f"  Sessions + State → {SESSION_DB}")
-    print(f"  Dev UI           → http://127.0.0.1:8000")
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    import uvicorn
+    print("Starting SAP Analyst MVP on http://0.0.0.0:8010")
+    uvicorn.run(app, host="0.0.0.0", port=8010)

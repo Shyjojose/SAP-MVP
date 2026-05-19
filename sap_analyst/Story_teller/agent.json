@@ -1,0 +1,17 @@
+{
+  "name": "Story_teller",
+  "description": "Story Teller agent that converts validated data into business narratives",
+  "url": "http://localhost:8003/a2a/Story_teller",
+  "version": "0.0.1",
+  "capabilities": {},
+  "default_input_modes": ["text/plain"],
+  "default_output_modes": ["text/plain"],
+  "skills": [
+    {
+      "id": "Story_teller",
+      "name": "model",
+      "description": "Narrative generation skill",
+      "tags": ["agent"]
+    }
+  ]
+}
