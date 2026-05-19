@@ -2,9 +2,9 @@ from google.adk.agents import Agent
 
 # Import the ADK-wrapped tools from your local tools.py file
 from .tools import schema_tool, query_tool
-
-researcher = Agent(
-    name="researcher",
+    
+Researcher= Agent(
+    name="Researcher",
     model="gemini-2.5-flash",
     description="An active auditor that uses database tools to verify the accuracy and logic of SAP queries.",
     # Equip the agent with your custom ADK tools
@@ -24,7 +24,8 @@ researcher = Agent(
     
     Action:
     - If you find errors, hallucinations, or business logic flaws, reply with **'REJECTED'**. Provide a detailed, technical explanation of what went wrong so the Sql_Coder can fix it.
-    - If the logic is perfect and the data is accurate, reply with **'APPROVED'** and immediately provide the final business answer to the user in plain English.
-    - Do not hand control back to sap_analyst after approval. Do not transfer to another agent.
+    - If the logic is perfect and the data is accurate, reply with **'APPROVED'** and output the raw JSON data you validated so it can be passed to the Story_teller.
     """
 )
+
+root_agent = Researcher
