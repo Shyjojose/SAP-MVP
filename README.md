@@ -1,15 +1,18 @@
 # SAP Analyst MVP — Google ADK Multi-Agent System
 
-An AI-powered SAP procurement analyst built with the **Google Agent Development Kit (ADK)** and **Vertex AI (Gemini 2.5 Flash)**. It uses a multi-agent pipeline to autonomously query SAP tables, validate data, and deliver business-ready supply chain insights — without requiring technical knowledge from the end user.
+An AI-powered SAP procurement analyst built with the **Google Agent Development Kit (ADK)** and **Vertex AI (Gemini 2.0 Flash)**. This system implements a sophisticated multi-agent pipeline to autonomously query SAP tables, validate data, and deliver business-ready supply chain insights through a natural language interface.
 
 > This MVP serves as a proof-of-concept for the Master Thesis topic: **"Autonomous Generation of Multi-Agent Systems for Supply Chain Planning"** at SAP's Supply Chain Management (SCM) Data Science team.
 
 ---
 
-## Architecture
+## 🏗 Architecture & Agentic Workflow
 
+The system utilizes a hybrid **Agent-to-Agent (A2A)** architecture, where specialized agents communicate via the A2A protocol. Each agent operates as an independent microservice.
 
+### Workflow Diagram
 
+```text
 [ User Query ]
       │
       ▼
@@ -19,7 +22,8 @@ An AI-powered SAP procurement analyst built with the **Google Agent Development 
         │
         ▼
 ┌───────────────┐
-│  SAP Analyst  │◄─────────────────┐ (If Validation Fails)
+│  Researcher    
+│   (sql query) │◄─────────────────┐ (If Validation Fails)
 └───────┬───────┘                  │
         │ (Raw Data Output)        │
         ▼                          │
@@ -35,240 +39,66 @@ An AI-powered SAP procurement analyst built with the **Google Agent Development 
         │
         ▼
 [ Executive Report ]
+```
 
+### Core Components
+
+1.  **Orchestrator (Port 8000):** Manages the high-level research loop and delegates tasks to specialized sub-agents.
+2.  **Researcher (Port 8001):** Equipped with SAP-specific tools to discover table schemas and extract data from the mock SAP environment.
+3.  **Critic Validator (Port 8002):** A strict data governance auditor that evaluates data for logical flaws and business logic sanity.
+4.  **Story Teller (Port 8003):** The final stage; translates raw JSON data into a professional, scannable business narrative.
 
 ---
 
-## Project Structure
+## 🚀 Running the System
 
+### Local Development (Multi-Process Simulation)
+The system is fully configured to run as a multi-process microservices simulation.
 
----
+1. **Verify Setup**:
+   - Ensure the `.venv` is activated.
+   - Confirm `.env` contains `GOOGLE_CLOUD_PROJECT="multiagent-system-496514"`.
 
-## Setup
+2. **Run the Full System**:
+   ```bash
+   ./run_local.sh
+   ```
+   This script launches the 4 specialized agents independently on ports 8000–8003.
 
-### 1. Prerequisites
-- Python 3.11+
-- A GCP project with Vertex AI API enabled
-- `gcloud` CLI authenticated with Application Default Credentials (`gcloud auth application-default login`)
-
-### 2. Clone and install
-
-```bash
-git clone <repo-url>
-cd "SAP MVP"
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-### 3. Configure environment
-
-Create a `.env` file in the project root and use Vertex AI auth, not a Gemini API key:
-
-```env
-GOOGLE_GENAI_USE_VERTEXAI="true"
-GOOGLE_CLOUD_PROJECT="your-gcp-project-id"
-GOOGLE_CLOUD_LOCATION="us-central1"
-```
-
-If you run the app on Cloud Run, GCE, or GKE, prefer a runtime service account instead of a downloaded key file.
-
-### 4. Run the ADK Dev UI
-
-```bash
-python3 run.py
-```
-
-Open **http://127.0.0.1:8000** in your browser.
+3. **Access**:
+   - Open the **ADK Dev UI** at: [http://localhost:8000](http://localhost:8000)
+   - The Orchestrator will automatically coordinate communication between the Researcher, Critic, and Story Teller agents.
 
 ---
 
-## Mock Schema — How It Mimics SAP HANA
+## 🛠 Project Structure
 
-The system simulates a real SAP ERP database using in-memory Python dictionaries in `sap_analyst/subagents/Critic_validator/tools.py`. Each mock table mirrors the exact field names, data types, and relationships of its real SAP counterpart — allowing the agents to reason about the schema exactly as they would in production.
-
-### How the mock works
-
-
-The `Critic_validator` agent calls these tools autonomously — it does not receive pre-written SQL. It reads the schema, decides which tables to join, queries them, then cross-checks the results for business logic errors.
-
-### Mock Tables
-
-#### EKKO — Purchasing Document Header
-Mirrors the SAP table that stores one row per Purchase Order.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| EBELN | String | Purchase Order Number (key) |
-| LIFNR | String | Vendor Account Number |
-| BEDAT | Date | Purchase Order Date |
-| WAERS | String | Currency Key (USD, EUR, etc.) |
-
-**Mock data:** 3 purchase orders across 2 vendors in USD and EUR.
-
-#### EKPO — Purchasing Document Item
-Mirrors the SAP table that stores line items for each Purchase Order (one PO can have many items).
-
-| Field | Type | Description |
-|-------|------|-------------|
-| EBELN | String | Purchase Order Number (FK → EKKO) |
-| EBELP | String | Item Number within PO |
-| MATNR | String | Material Number (FK → MARA) |
-| MENGE | Float | Ordered Quantity |
-| NETPR | Float | Net Price per Unit |
-
-**Mock data:** 3 line items with realistic quantities and prices.
-
-#### MARA — General Material Data
-Mirrors the SAP material master table — the central record for every product.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| MATNR | String | Material Number (key) |
-| MAKTX | String | Material Description |
-| MEINS | String | Base Unit of Measure (EA, KG, etc.) |
-| MTART | String | Material Type (FERT=Finished, ROH=Raw Material) |
-
-**Mock data:** 3 materials — Pump Assembly XL (finished good), Steel Rod 10mm (raw), Hydraulic Valve (finished good).
-
-#### MARD — Storage Location Data
-Mirrors the SAP table that tracks stock levels per plant and storage location.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| MATNR | String | Material Number (FK → MARA) |
-| WERKS | String | Plant Code |
-| LGORT | String | Storage Location |
-| LABST | Float | Unrestricted-Use Stock Quantity |
-
-**Mock data:** Stock levels across 2 storage locations at plant 1000.
-
-### Relationship Model
-
-```
-EKKO (PO Header)
-  └── EKPO (PO Items)  ←── MATNR ──► MARA (Material Master)
-                                           │
-                                           └── MATNR ──► MARD (Stock Levels)
-```
-
-This mirrors real SAP procurement joins: you start with the PO header, expand to line items, then enrich with material descriptions and check current stock.
-
-### Replacing Mock Data with Real SAP / BigQuery
-
-To connect to a real SAP HANA or BigQuery backend, replace the dictionary lookups in `tools.py` with:
-
-```python
-from google.cloud import bigquery
-
-client = bigquery.Client()
-
-def query_sap_table(table_name: str, filters: dict = None) -> dict:
-    query = f"SELECT * FROM `your-project.sap_dataset.{table_name}`"
-    # add WHERE clauses from filters
-    result = client.query(query).result()
-    return {"columns": [...], "rows": [...]}
-```
-
-No changes to agents or prompts are needed — the tool interface stays identical.
-
----
-
-## Example Query
-
-**User:** *"Give me a full picture of our open purchase orders, vendors, spend and risks."*
-
-**Agent pipeline:**
-1. `sap_analyst` → immediately transfers to `Critic_validator`
-2. `Critic_validator` → checks schemas → queries EKKO + EKPO + MARA → validates → transfers to `Story_teller`
-3. `Story_teller` → produces business narrative
-
-**Sample Output:**
-```
-Headline: Open purchase orders show a total commitment of $2,500 USD and €750 EUR.
-
-Key Findings:
-• PO 4500000001 — 10x Pump Assembly XL from VENDOR_001 @ $250/ea = $2,500
-• PO 4500000002 — 500 KG Steel Rod 10mm from VENDOR_002 @ €1.5/KG = €750
-
-Anomalies & Risks:
-• Large quantity (500 KG) for Steel Rod — verify demand aligns with forecast.
-
-Recommended Actions:
-• Confirm Steel Rod demand with production planning.
-• Explore volume discounts with both vendors.
+```text
+SAP MVP/
+├── .env                              # GCP configuration
+├── requirements.txt                  # Project dependencies
+├── run_local.sh                      # Local multi-process launch script
+├── sap_analyst_sessions.db           # Persistent memory
+└── sap_analyst/
+    ├── orchestrator/                 # Root orchestrator & A2A config
+    ├── Researcher/                   # SAP data tools & extraction logic
+    ├── critic_validator/             # Data governance & auditing
+    └── Story_teller/                 # Narrative generation
 ```
 
 ---
 
-## Thesis Context — SAP SCM Data Science
-
-This project directly addresses the research gaps identified in the SAP Master Thesis:
-
-> *"Autonomous multi-agent systems (MAS) that dynamically generate agentic workflows, assign specialized roles to agents, facilitate collaborative work, and continuously improve their processes represent the cutting edge of agentic system research. However, while autonomous MAS show promise for complex analytical tasks, their effectiveness in enterprise supply chain environments remains largely unexplored."*
-
-### What This MVP Demonstrates
-
+## 💾 Mock SAP Schema
+The system uses in-memory dictionaries to mimic SAP HANA:
+- **EKKO:** Purchasing Document Header
+- **EKPO:** Purchasing Document Item
+- **MARA:** General Material Data
+- **MARD:** Storage Location Data
 
 ---
 
-## Future Improvements (Thesis Roadmap)
-
-### 1. Benchmark Development
-The thesis calls for a **curated dataset of progressively complex supply chain scenarios** requiring multi-step SQL queries.
-
-- Expand mock schema to include full SAP SCM tables: `PLAF` (planned orders), `MD04` (stock/requirements list), `LIPS` (delivery items), `VBAP` (sales order items), `MB51` (material movements)
-- Build a benchmark suite of 50–100 natural language questions mapped to ground-truth SQL and expected output — ranging from simple single-table lookups to complex multi-table aggregations
-- Use existing open-source datasets (e.g., Supply Chain datasets on Kaggle, or SAP's own demo IDES data) as the basis for realistic mock data
-
-### 2. Autonomous Workflow Generation
-Currently the pipeline is fixed (Critic_validator → Story_teller). A key thesis contribution would be **dynamic agent generation**:
-
-- The root agent analyses the user query and spawns a workflow of specialised sub-agents on demand (e.g., adding a `Demand_Forecaster` or `Inventory_Checker` agent when needed)
-- Use `LoopAgent` or `SequentialAgent` from ADK to enable iterative refinement loops where the validator can trigger a re-query cycle
-- Explore `LangGraph`-style conditional edges for branching workflows based on data quality signals
-
-### 3. RAG-Grounded Schema Expert
-Replace the hardcoded `get_table_schema` tool with **Vertex AI Search (RAG)**:
-
-- Index the full SAP Data Dictionary (field descriptions, table relationships, business rules) as a Vertex AI Search corpus
-- The `Critic_validator` retrieves relevant schema context dynamically — enabling it to handle any SAP table, not just the four mocked here
-- This directly addresses the thesis requirement for *"sophisticated SAP schema navigation"*
-
-### 4. System Validation & Evaluation
-The thesis requires **assessing system accuracy and reliability**:
-
-- Implement an automated evaluation harness: run each benchmark query, compare agent-generated SQL to ground truth, score accuracy and hallucination rate
-- Use the ADK's built-in eval framework (`adk eval`) with custom scorers for SAP-specific correctness
-- Track metrics: schema accuracy, query correctness, narrative quality (using LLM-as-judge), and end-to-end latency
-- Introduce a `Model_Monitor` agent that flags when the system produces outputs inconsistent with historical patterns (Vertex AI Model Monitoring)
-
-### 5. A2A Protocol & Cross-Framework Agents
-Implement the **Agent-to-Agent (A2A) protocol** (2026 standard):
-
-- Expose the `Critic_validator` as an A2A-compliant service with an Agent Card
-- Allow external agents (e.g., a Python-based demand planning agent or a SAP BTP agent) to call into this system securely
-- This enables true enterprise interoperability across SAP's technology stack
-
-### 6. Production Deployment
-- Deploy to **Vertex AI Agent Engine** for managed scaling and "Memory Banks"
-- Connect to real **SAP HANA via BigQuery** (SAP Datasphere integration)
-- Add **LFA1/LFB1** vendor master, **VBAK/VBAP** sales orders, and **MD04** MRP tables
-- Enable persistent long-term memory using Agent Engine's built-in session management
-
----
-
-## Tech Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Agent Framework | Google ADK 1.26.0 |
-| LLM | Gemini 2.0 Flash (Vertex AI) |
-| Session Storage | SQLite via aiosqlite |
-| Web Server | Uvicorn + FastAPI |
-| GCP Services | Vertex AI, Cloud Project |
-| Future: Real DB | BigQuery + SAP Datasphere |
-| Future: Memory | Vertex AI Agent Engine |
-| Future: RAG | Vertex AI Search |
-
-
+## 🎓 Thesis Context
+This project addresses research in **Autonomous Multi-Agent Systems (MAS)**:
+- **Autonomous Schema Navigation:** Agents discover relationships dynamically.
+- **Data Governance:** Automated auditing via the Critic Validator.
+- **Narrative Abstraction:** LLM-driven conversion of raw ERP data into business insights.
