@@ -50,24 +50,54 @@ The system utilizes a hybrid **Agent-to-Agent (A2A)** architecture, where specia
 
 ---
 
-## 🚀 Running the System
+## 🚀 Deployment Guide
 
-### Local Development (Multi-Process Simulation)
-The system is fully configured to run as a multi-process microservices simulation.
+### 1. Local Development (Multi-Process Simulation)
+To simulate microservices locally, use the provided execution script:
 
-1. **Verify Setup**:
-   - Ensure the `.venv` is activated.
-   - Confirm `.env` contains `GOOGLE_CLOUD_PROJECT="multiagent-system-496514"`.
+```bash
+./run_local.sh
+```
+This launches 4 agents independently on ports 8000–8003. Access the **ADK Dev UI** at [http://localhost:8000](http://localhost:8000).
 
-2. **Run the Full System**:
-   ```bash
-   ./run_local.sh
-   ```
-   This script launches the 4 specialized agents independently on ports 8000–8003.
+### 2. Cloud Production Deployment (Google Cloud Run)
+For production, deploy each agent as a separate service on Google Cloud Run to enable scalable, independent agent communication.
 
-3. **Access**:
-   - Open the **ADK Dev UI** at: [http://localhost:8000](http://localhost:8000)
-   - The Orchestrator will automatically coordinate communication between the Researcher, Critic, and Story Teller agents.
+#### A. Deploy Sub-Agents
+Deploy these in parallel using `gcloud`:
+
+```bash
+# Deploy Researcher
+gcloud run deploy researcher --source sap_analyst/Researcher/ --region us-central1 --allow-unauthenticated \
+  --set-env-vars GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT,GOOGLE_CLOUD_LOCATION=$GOOGLE_CLOUD_LOCATION,GOOGLE_GENAI_USE_VERTEXAI="true"
+
+# Deploy Critic Validator
+gcloud run deploy critic --source sap_analyst/critic_validator/ --region us-central1 --allow-unauthenticated \
+  --set-env-vars GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT,GOOGLE_CLOUD_LOCATION=$GOOGLE_CLOUD_LOCATION,GOOGLE_GENAI_USE_VERTEXAI="true"
+
+# Deploy Story Teller
+gcloud run deploy storyteller --source sap_analyst/Story_teller/ --region us-central1 --allow-unauthenticated \
+  --set-env-vars GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT,GOOGLE_CLOUD_LOCATION=$GOOGLE_CLOUD_LOCATION,GOOGLE_GENAI_USE_VERTEXAI="true"
+```
+
+#### B. Capture Service URLs
+Retrieve the assigned URLs after deployment:
+```bash
+RESEARCHER_URL=$(gcloud run services describe researcher --region us-central1 --format='value(status.url)')
+CRITIC_URL=$(gcloud run services describe critic --region us-central1 --format='value(status.url)')
+STORY_URL=$(gcloud run services describe storyteller --region us-central1 --format='value(status.url)')
+```
+
+#### C. Deploy Orchestrator
+Configure the Orchestrator with the sub-agent URLs for A2A discovery:
+
+```bash
+gcloud run deploy orchestrator --source sap_analyst/orchestrator/ --region us-central1 --allow-unauthenticated \
+  --set-env-vars RESEARCHER_AGENT_CARD_URL=$RESEARCHER_URL/a2a/agent/.well-known/agent-card.json \
+  --set-env-vars CRITIC_AGENT_CARD_URL=$CRITIC_URL/a2a/agent/.well-known/agent-card.json \
+  --set-env-vars STORY_AGENT_CARD_URL=$STORY_URL/a2a/agent/.well-known/agent-card.json \
+  --set-env-vars GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT,GOOGLE_CLOUD_LOCATION=$GOOGLE_CLOUD_LOCATION,GOOGLE_GENAI_USE_VERTEXAI="true"
+```
 
 ---
 
