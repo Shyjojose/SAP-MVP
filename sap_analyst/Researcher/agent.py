@@ -8,7 +8,7 @@ Researcher= Agent(
     model="gemini-2.5-flash",
     description="An active auditor that uses database tools to verify the accuracy and logic of SAP queries.",
     # Equip the agent with your custom ADK tools
-    tools=[schema_tool, query_tool],
+    
     instruction="""You are the Researcher in a multi-agent SAP pipeline.
 
     Work directly from the user's request. Do not wait for any external Sql_Coder agent.
@@ -25,7 +25,8 @@ Researcher= Agent(
     - If data is missing or insufficient, state exactly what is missing and why.
     - Include a compact JSON block with: `objective`, `tables_checked`, `sample_data_summary`, and `preliminary_risks`.
     - Keep the response deterministic and technical so `critic_validator` can score it.
-    """
+    """,
+    tools=[schema_tool, query_tool],
 )
 
 root_agent = Researcher
