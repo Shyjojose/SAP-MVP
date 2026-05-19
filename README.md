@@ -1,6 +1,6 @@
 # SAP Analyst MVP — Google ADK Multi-Agent System
 
-An AI-powered SAP procurement analyst built with the **Google Agent Development Kit (ADK)** and **Vertex AI (Gemini 2.0 Flash)**. This system implements a sophisticated multi-agent pipeline to autonomously query SAP tables, validate data, and deliver business-ready supply chain insights through a natural language interface.
+An AI-powered SAP procurement analyst built with the **Google Agent Development Kit (ADK)** and **Vertex AI (Gemini 2.5 Flash)**. This system implements a sophisticated multi-agent pipeline to autonomously query SAP tables, validate data, and deliver business-ready supply chain insights through a natural language interface.
 
 > This MVP serves as a proof-of-concept for the Master Thesis topic: **"Autonomous Generation of Multi-Agent Systems for Supply Chain Planning"** at SAP's Supply Chain Management (SCM) Data Science team.
 
